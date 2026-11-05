@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cumulus – your files in the cloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#10213a; --ink-2:#1c3358; --sky:#e9f0f7; --card:#ffffff;
+  --line:#d5dfeb; --muted:#5d6f87; --accent:#ff6a2b; --accent-dark:#e0521a;
+  --danger:#c62f3e; --ok:#1c8a5a;
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:Figtree,system-ui,sans-serif;background:var(--sky);color:var(--ink);min-height:100vh;display:grid;grid-template-columns:280px 1fr}
+h1,h2,.brand{font-family:'Bricolage Grotesque',sans-serif}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Sidebar */
+aside{background:var(--ink);color:#fff;padding:32px 26px;display:flex;flex-direction:column;gap:32px;position:sticky;top:0;height:100vh}
+.brand{font-size:30px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+.brand svg{width:34px;height:34px}
+.tag{color:#a9bbd4;font-size:15px;line-height:1.5;margin-top:-18px}
+.stats{display:grid;gap:14px}
+.stat{background:var(--ink-2);border-radius:12px;padding:16px 18px}
+.stat b{display:block;font-family:'Bricolage Grotesque';font-size:30px;font-weight:700}
+.stat span{color:#a9bbd4;font-size:14px}
+.where{margin-top:auto;font-size:14px;color:#a9bbd4;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;background:#7a8aa3}
+.dot.cloud{background:#3ddc97}
+
+/* Main */
+main{padding:40px 44px;max-width:1000px;width:100%}
+h1{font-size:38px;font-weight:800;letter-spacing:-1px}
+.sub{color:var(--muted);margin:6px 0 26px}
+
+.drop{background:var(--card);border:2px dashed #9fb3cc;border-radius:16px;padding:38px 20px;text-align:center;transition:.15s}
+.drop.over{border-color:var(--accent);background:#fff4ee}
+.drop svg{width:44px;height:44px;color:var(--accent)}
+.drop h2{font-size:21px;margin:10px 0 4px}
+.drop p{color:var(--muted);font-size:15px;margin-bottom:16px}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:11px 22px;font-weight:600}
+.btn:hover{background:var(--accent-dark)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--sky)}
+.bar{height:8px;background:var(--line);border-radius:8px;margin-top:18px;overflow:hidden;display:none}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+
+.listhead{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:34px 0 12px}
+.listhead h2{font-size:23px}
+.search{border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;width:240px;background:var(--card)}
+
+.table{background:var(--card);border-radius:16px;border:1px solid var(--line);overflow:hidden}
+.row{display:grid;grid-template-columns:1fr 100px 150px 230px;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row.head{background:#f4f8fc;color:var(--muted);font-size:14px;font-weight:600;padding:11px 20px}
+.file{display:flex;align-items:center;gap:14px;min-width:0}
+.ext{flex:none;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:700;font-size:12px;color:#fff;background:var(--ink-2)}
+.fname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{color:var(--muted);font-size:15px}
+.acts{display:flex;gap:8px;justify-content:flex-end}
+.acts button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;font-size:14px;font-weight:500}
+.acts button:hover{background:var(--sky)}
+.acts .del{color:var(--danger)}
+.acts .del:hover{background:#fdecee;border-color:#f1b9bf}
+.empty{padding:48px 20px;text-align:center;color:var(--muted)}
+
+dialog{border:0;border-radius:16px;padding:26px;width:min(420px,92vw);box-shadow:0 20px 60px rgba(16,33,58,.3)}
+dialog::backdrop{background:rgba(16,33,58,.5)}
+dialog h2{font-size:22px;margin-bottom:14px}
+dialog input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:inherit;margin-bottom:18px}
+.dlg-acts{display:flex;gap:10px;justify-content:flex-end}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;font-weight:500}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.err{background:var(--danger)}
+
+@media (max-width:860px){
+  body{grid-template-columns:1fr}
+  aside{position:static;height:auto;padding:22px;gap:18px}
+  .stats{grid-template-columns:1fr 1fr}
+  .where{margin-top:0}
+  main{padding:26px 18px}
+  .row{grid-template-columns:1fr auto;grid-template-areas:"f f" "m a"}
+  .row.head{display:none}
+  .row .file{grid-area:f}
+  .row .meta{display:none}
+  .row .meta.size{display:block;grid-area:m}
+  .acts{grid-area:a}
+  .listhead{flex-direction:column;align-items:stretch}
+  .search{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand">
+    <svg viewBox="0 0 48 48" fill="none"><path d="M14 36a9 9 0 0 1-1-17.9A12 12 0 0 1 36 16a10 10 0 0 1-1 20H14Z" fill="#ff6a2b"/></svg>
+    Cumulus
+  </div>
+  <p class="tag">Upload files once. Get them back from anywhere.</p>
+  <div class="stats">
+    <div class="stat"><b id="sCount">0</b><span>files stored</span></div>
+    <div class="stat"><b id="sSize">0 B</b><span>space used</span></div>
+  </div>
+  <div class="where"><span class="dot" id="dot"></span><span id="where">Checking storage…</span></div>
+</aside>
+
+<main>
+  <h1>My files</h1>
+  <p class="sub">Drag files in, or browse. Download, rename or delete them any time.</p>
+
+  <section class="drop" id="drop">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+    <h2>Drop files here to upload</h2>
+    <p>Up to 10 files at a time, 25 MB each.</p>
+    <button class="btn" id="browse">Choose files</button>
+    <input type="file" id="picker" multiple hidden>
+    <div class="bar" id="bar"><i id="barFill"></i></div>
+  </section>
+
+  <div class="listhead">
+    <h2>Stored files</h2>
+    <input class="search" id="search" type="search" placeholder="Search by file name" aria-label="Search files">
+  </div>
+
+  <div class="table" id="table"></div>
+</main>
+
+<dialog id="renameDlg">
+  <h2>Rename file</h2>
+  <input id="newName" aria-label="New file name">
+  <div class="dlg-acts">
+    <button class="btn ghost" id="renameCancel">Cancel</button>
+    <button class="btn" id="renameSave">Save name</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let files = [];
+let renaming = null;
+
+const fmt = (b) => {
+  if (b < 1024) return b + ' B';
+  const u = ['KB', 'MB', 'GB']; let i = -1;
+  do { b /= 1024; i++; } while (b >= 1024 && i < 2);
+  return b.toFixed(1) + ' ' + u[i];
+};
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const colors = { pdf:'#d6402f', doc:'#2b5fc7', docx:'#2b5fc7', xls:'#1c8a5a', xlsx:'#1c8a5a', ppt:'#e07a1a', pptx:'#e07a1a', png:'#7a4fd1', jpg:'#7a4fd1', jpeg:'#7a4fd1', gif:'#7a4fd1', zip:'#6b5b3e', mp4:'#c2307d', mp3:'#c2307d', txt:'#5d6f87' };
+
+function toast(msg, isErr) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => (t.className = ''), 3200);
+}
+
+async function api(url, opts) {
+  const r = await fetch(url, opts);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Request failed.');
+  return d;
+}
+
+async function load() {
+  try {
+    const d = await api('/api/files');
+    files = d.files;
+    $('#dot').className = 'dot' + (d.mode === 'cloud' ? ' cloud' : '');
+    $('#where').textContent = d.mode === 'cloud' ? 'Saved on AWS S3 cloud' : 'Test mode: saved on this computer';
+    render();
+  } catch (e) { toast(e.message, true); }
+}
+
+function render() {
+  const q = $('#search').value.toLowerCase();
+  const shown = files.filter((f) => f.name.toLowerCase().includes(q))
+    .sort((a, b) => new Date(b.modified) - new Date(a.modified));
+
+  $('#sCount').textContent = files.length;
+  $('#sSize').textContent = fmt(files.reduce((s, f) => s + f.size, 0));
+
+  if (!shown.length) {
+    $('#table').innerHTML = `<div class="empty">${files.length ? 'No files match your search.' : 'No files yet. Drop your first file above.'}</div>`;
+    return;
+  }
+  $('#table').innerHTML =
+    `<div class="row head"><span>Name</span><span>Size</span><span>Uploaded</span><span></span></div>` +
+    shown.map((f) => {
+      const ext = (f.name.split('.').pop() || '').toLowerCase();
+      const n = esc(f.name);
+      return `<div class="row">
+        <div class="file"><span class="ext" style="background:${colors[ext] || '#1c3358'}">${esc(ext.slice(0, 4)) || 'FILE'}</span><span class="fname" title="${n}">${n}</span></div>
+        <span class="meta size">${fmt(f.size)}</span>
+        <span class="meta">${new Date(f.modified).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+        <div class="acts" data-name="${n}">
+          <button data-act="dl">Download</button>
+          <button data-act="rn">Rename</button>
+          <button data-act="del" class="del">Delete</button>
+        </div></div>`;
+    }).join('');
+}
+
+function upload(list) {
+  if (!list.length) return;
+  const fd = new FormData();
+  [...list].forEach((f) => fd.append('files', f));
+  const xhr = new XMLHttpRequest();
+  $('#bar').style.display = 'block';
+  xhr.upload.onprogress = (e) => { if (e.lengthComputable) $('#barFill').style.width = (e.loaded / e.total * 100) + '%'; };
+  xhr.onload = () => {
+    $('#bar').style.display = 'none'; $('#barFill').style.width = '0';
+    let d = {}; try { d = JSON.parse(xhr.responseText); } catch (_) {}
+    if (xhr.status === 200) { toast(`Uploaded ${d.uploaded} file${d.uploaded > 1 ? 's' : ''}`); load(); }
+    else toast(d.error || 'Upload failed.', true);
+  };
+  xhr.onerror = () => { $('#bar').style.display = 'none'; toast('Network error. Check your connection.', true); };
+  xhr.open('POST', '/api/upload');
+  xhr.send(fd);
+}
+
+// Upload events
+$('#browse').onclick = () => $('#picker').click();
+$('#picker').onchange = (e) => { upload(e.target.files); e.target.value = ''; };
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => upload(e.dataTransfer.files));
+
+// Actions: download / rename / delete
+$('#table').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const name = btn.parentElement.dataset.name;
+  const act = btn.dataset.act;
+  try {
+    if (act === 'dl') {
+      const d = await api(`/api/files/${encodeURIComponent(name)}/download`);
+      window.location.href = d.url;
+    } else if (act === 'rn') {
+      renaming = name; $('#newName').value = name; $('#renameDlg').showModal();
+    } else if (act === 'del') {
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+      await api(`/api/files/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      toast('File deleted'); load();
+    }
+  } catch (err) { toast(err.message, true); }
+});
+
+$('#renameCancel').onclick = () => $('#renameDlg').close();
+$('#renameSave').onclick = async () => {
+  try {
+    await api(`/api/files/${encodeURIComponent(renaming)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newName: $('#newName').value }),
+    });
+    $('#renameDlg').close(); toast('File renamed'); load();
+  } catch (err) { toast(err.message, true); }
+};
+$('#newName').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#renameSave').click(); });
+
+$('#search').addEventListener('input', render);
+load();
+</script>
+</body>
+</html>
